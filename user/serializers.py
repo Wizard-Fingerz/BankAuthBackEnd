@@ -4,7 +4,14 @@ from .models import *
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'account_number', 'card_details', 'last_six_digits']
+        fields = ['first_name', 'last_name', 'account_number', 'card_details', 'last_six_digits', 'email']
+
+
+class CustomerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name', 'email', 'phone_number', 'profile_image']
+
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     class Meta:

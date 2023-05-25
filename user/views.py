@@ -21,6 +21,20 @@ print(key)
 f = Fernet(key)
 print(f)
 
+def get_csrf_token(request):
+    token = request.COOKIES.get('csrftoken')
+    return JsonResponse({'csrfToken': token})
+
+
+class CustomerProfileCreateView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = CustomerSerializer
+
+
+class RegisterUserCreateView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
 class Register(APIView):
     def post(self, request, format=None):
         serializer = UserSerializer(data=request.data)
