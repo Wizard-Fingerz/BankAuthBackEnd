@@ -97,7 +97,7 @@ WSGI_APPLICATION = "BankAuthBackEnd.wsgi.application"
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'staticfiles')
+    os.path.join(BASE_DIR, 'static')
    ]
 STATIC_URL = '/staticfiles/'
 
@@ -118,11 +118,10 @@ MEDIA_URL = '/media/'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'bankauthdb',
-        'HOST': 'localhost',
-        'PORT': '3306',
-        'USER': 'root',
-        'PASSWORD': 'root',
+        'NAME': 'BankAuth$default',
+        'HOST': 'BankAuth.mysql.pythonanywhere-services.com',
+        'USER': 'BankAuth',
+        'PASSWORD': 'Oladiti123.',
     }
 }
 
