@@ -16,7 +16,7 @@ class User(AbstractUser):
     last_six_digits = models.IntegerField(unique=True, null=True, blank=True)
     email = models.EmailField(_("email"), max_length=250, unique=True)
     create_at = models.DateTimeField(auto_now_add=True)
-    profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
+    profile_image = models.ImageField(upload_to='media/', null=True, blank=True)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     is_admin = models.BooleanField(default=False, verbose_name='Admin')
     is_customer = models.BooleanField(default=False, verbose_name = 'Customer')
