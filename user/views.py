@@ -12,6 +12,7 @@ from rest_framework import views
 from rest_framework import generics, filters, status
 from rest_framework.views import APIView
 from django.conf import settings
+from django.middleware import csrf
 from .models import *
 
 # Create your views here.
@@ -21,9 +22,11 @@ print(key)
 f = Fernet(key)
 print(f)
 
+
 def get_csrf_token(request):
-    token = request.COOKIES.get('csrftoken')
+    token = csrf.get_token(request)
     return JsonResponse({'csrfToken': token})
+
 
 
 class CustomerProfileCreateView(generics.CreateAPIView):
@@ -36,6 +39,7 @@ class RegisterUserCreateView(generics.CreateAPIView):
     serializer_class = UserSerializer
 
 class Register(APIView):
+    permission_classes = [permissions.AllowAny]
     def post(self, request, format=None):
         serializer = UserSerializer(data=request.data)
 
