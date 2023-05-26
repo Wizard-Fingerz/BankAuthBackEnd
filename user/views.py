@@ -1,18 +1,25 @@
 from django.shortcuts import render
-from .serializers import *
 from django.http import HttpResponse, JsonResponse
-from rest_framework.parsers import JSONParser
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework import generics, filters
+from django.conf import settings
+from django.middleware import csrf
+from django.contrib.auth import authenticate
+
+from rest_framework import generics, filters, status
 from rest_framework.authentication import SessionAuthentication
-from rest_framework import viewsets, permissions
+from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
+
+from .serializers import *
+from .models import *
 from cryptography.fernet import Fernet
 from rest_framework import views
 from rest_framework import generics, filters, status
 from rest_framework.views import APIView
 from django.conf import settings
-from django.middleware import csrf
 from .models import *
 
 # Create your views here.
@@ -21,7 +28,6 @@ key = Fernet.generate_key()
 print(key)
 f = Fernet(key)
 print(f)
-
 
 def get_csrf_token(request):
     token = csrf.get_token(request)
@@ -33,67 +39,92 @@ class CustomerProfileCreateView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = CustomerSerializer
 
-
-class RegisterUserCreateView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
 class Register(APIView):
-    permission_classes = [permissions.AllowAny]
     def post(self, request, format=None):
         serializer = UserSerializer(data=request.data)
 
         if serializer.is_valid():
-            obj = serializer.save()
+            # Registration code...
+            user = serializer.save()
+            token = Token.objects.create(user=user)
             # Get the plaintext data from the form input
             card_details = serializer.data.get('card_details')
+
             # Generate a Fernet key
             key = Fernet.generate_key()
             # Create a Fernet object with the key
             f = Fernet(key)
             # Encrypt the plaintext data
-            card_details = f.encrypt(card_details.encode())
+            card_details = f.encrypt(str(card_details).encode())
 
             password = make_password(serializer.data['password'])
             User.objects.filter(account_number=serializer.data['account_number']).update(
                 card_details=card_details)
             User.objects.filter(account_number=serializer.data['account_number']).update(
                 password=password)
-            return Response({'success': 'Registration Successful.'}, status=200)
+
+            # Retrieve the token key
+            token_key = token.key
+
+
+            return Response({'success': 'Registration Successful.', 'token': token_key}, status=status.HTTP_201_CREATED)
         else:
-            return Response({'error': 'Error. Try again'})
+            # Return the validation errors in the response
+            return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserView(APIView):
-    # permission_classes = (permissions.IsAuthenticated)
-    authentication_classes = (SessionAuthentication,)
-    
-    def get(self, request):
-        serializer = UserSerializer(request.user)
-        return Response({'user': serializer.data}, status = status.HTTP_200_OK)
-    
-    def post(self, request):
-        serializer = UserRegisterSerializer(data = request.data)
-        if serializer.is_valid():
-            obj = serializer.save()
-            # Get the plaintext data from the form input
-            card_details = serializer.data.get('card_details')
-            # Generate a Fernet key
-            key = Fernet.generate_key()
-            # Create a Fernet object with the key
-            f = Fernet(key)
-            # Encrypt the plaintext data
-            card_details = f.encrypt(card_details.encode())
 
-            password = make_password(serializer.data['password'])
-            User.objects.filter(account_number=serializer.data['account_number']).update(
-                card_details=card_details)
-            User.objects.filter(account_number=serializer.data['account_number']).update(
-                password=password)
-            return Response({'success': 'Registration Successful.'}, status=200)
+
+class Login(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request, format=None):
+        account_number = request.data.get('account_number')
+        password = request.data.get('password')
+
+        # Authenticate the user
+        user = authenticate(account_number=account_number, password=password)
+
+        if user is not None:
+            # Generate or retrieve the authentication token
+            token, created = Token.objects.get_or_create(user=user)
+
+            return Response({'token': token.key}, status=status.HTTP_200_OK)
         else:
-            return Response({'error': 'Error. Try again'})
-        
+            return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+# class UserView(APIView):
+#     # permission_classes = (permissions.IsAuthenticated)
+#     permission_classes = [permissions.AllowAny]
+#     authentication_classes = (SessionAuthentication,)
+
+#     def get(self, request):
+#         serializer = UserSerializer(request.user)
+#         return Response({'user': serializer.data}, status = status.HTTP_200_OK)
+
+#     def post(self, request):
+#         serializer = UserRegisterSerializer(data = request.data)
+#         if serializer.is_valid():
+#             obj = serializer.save()
+#             # Get the plaintext data from the form input
+#             card_details = serializer.data.get('card_details')
+#             # Generate a Fernet key
+#             key = Fernet.generate_key()
+#             # Create a Fernet object with the key
+#             f = Fernet(key)
+#             # Encrypt the plaintext data
+#             card_details = f.encrypt(card_details.encode())
+
+#             password = make_password(serializer.data['password'])
+#             User.objects.filter(account_number=serializer.data['account_number']).update(
+#                 card_details=card_details)
+#             User.objects.filter(account_number=serializer.data['account_number']).update(
+#                 password=password)
+#             return Response({'success': 'Registration Successful.'}, status=200)
+#         else:
+#             return Response({'error': 'Error. Try again'})
+
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -114,7 +145,7 @@ class UserViewSet(viewsets.ModelViewSet):
 class SecurityQuestion(APIView):
     def post(self, request):
         serializer = SecurityQuestionsSerializer(data=request.data)
-        
+
         if serializer.is_valid():
             obj = serializer.save()
             # get the question and their answers from the frontend as plaintext
@@ -126,7 +157,7 @@ class SecurityQuestion(APIView):
             answer3 = serializer.data.get('answer3')
             question4 = serializer.data.get('question4')
             answer4 = serializer.data.get('answer4')
-            
+
             # encrypt the inputs using the generated key
             question1 = f.encrypt(question1.encode())
             answer1 = f.encrypt(answer1.encode())
@@ -136,7 +167,7 @@ class SecurityQuestion(APIView):
             answer3 = f.encrypt(answer3.encode())
             question4 = f.encrypt(question4.encode())
             answer4 = f.encrypt(answer4.encode())
-            
+
             # update the database with the encrypted questions and answers
             SecurityQuestions.objects.filter(user=serializer.data['question1']).update(question1=question1)
             SecurityQuestions.objects.filter(user=serializer.data['answer1']).update(answer1=answer1)
@@ -149,11 +180,11 @@ class SecurityQuestion(APIView):
             return Response({'success': 'Security Questions Successfully saved.'}, status=200)
         else:
             return Response({'error': 'Error. Try again'})
-            
-            
-            
-            
-            
+
+
+
+
+
 
 
 # class MyView(views.APIView):
