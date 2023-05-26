@@ -13,6 +13,9 @@ class Transaction(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     decription= models.TextField()
 
+    def __str__(self):
+        return str(self.description)
+
 
 
 class Payment(models.Model):
@@ -30,7 +33,7 @@ class Wallet(models.Model):
     phone_number = models.CharField(_("phone number"), max_length=15)
     password = models.CharField(_("password"), max_length=200)
     created_at = models.DateTimeField(auto_now=True)
-    
+
     def __str__(self) -> str:
         return self.user
 
@@ -47,14 +50,14 @@ class WalletTransaction(models.Model):
         CREDIT_USER_WALLET = 'credit user wallet', _('Credit User Wallet')
 
     transaction_id = models.CharField(_("transaction id"), max_length=250)
-    status = models.CharField(max_length=200, null=True, 
-        choices=STATUS.choices, 
+    status = models.CharField(max_length=200, null=True,
+        choices=STATUS.choices,
         default=STATUS.PENDING
     )
     transaction_type = models.CharField(max_length=200, null=True,
         choices=TransactionType.choices
         )
-    wallet = models.ForeignKey(Wallet, on_delete=models.SET_NULL, 
+    wallet = models.ForeignKey(Wallet, on_delete=models.SET_NULL,
         null=True
     )
     amount = models.DecimalField(_("amount"), max_digits=60, decimal_places=2)
