@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from cryptography.fernet import Fernet
 from pathlib import Path
-
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -26,7 +26,7 @@ SECRET_KEY = "django-insecure-!jaucuju141=s4i@3zolbmie9x3(uc+(w&ej7mv=mu9hjg$d%k
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.79.171']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.79.171', 'BankAuth.pythonanywhere.com',]
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -49,7 +49,9 @@ INSTALLED_APPS = [
     'corsheaders',
     'user',
     'wallet',
-]# Add DRF authentication and permission classes
+]
+
+# Add DRF authentication and permission classes
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
@@ -91,6 +93,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "BankAuthBackEnd.wsgi.application"
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static')
+   ]
+STATIC_URL = '/static/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
