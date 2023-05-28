@@ -77,7 +77,7 @@ MIDDLEWARE = [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    'authentication_backends.CustomAuthenticationBackend',
+    'user.authentication_backends.CustomAuthenticationBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
 
