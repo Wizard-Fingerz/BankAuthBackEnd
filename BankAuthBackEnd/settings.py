@@ -10,7 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
-from cryptography.fernet import Fernet
+# from cryptography.fernet import Fernet
 from pathlib import Path
 import os
 
@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
     'user',
+    'knox',
     'wallet',
 ]
 
@@ -74,6 +75,20 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
+
+AUTHENTICATION_BACKENDS = [
+    'authentication_backends.CustomAuthenticationBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+
+
+# AUTHENTICATION_BACKENDS = [
+#     'user.backends.UsernameOrAccountNumberBackend',
+#     'django.contrib.auth.backends.ModelBackend',
+# ]
+
+
 
 ROOT_URLCONF = "BankAuthBackEnd.urls"
 
@@ -110,7 +125,7 @@ MEDIA_URL = '/media/'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'BankAuth$default',
+        'NAME': 'BankAuth$BankAuthDb',
         'HOST': 'BankAuth.mysql.pythonanywhere-services.com',
         'USER': 'BankAuth',
         'PASSWORD': 'Oladiti123.',

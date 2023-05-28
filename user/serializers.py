@@ -19,6 +19,14 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class AnswerSerializer(serializers.Serializer):
+    question = serializers.CharField()
+    answer = serializers.CharField()
+    encryption_key = serializers.CharField()
+
+    def create(self, validated_data):
+        return Answer.objects.create(**validated_data)
+
 
 class SecurityQuestionsSerializer(serializers.ModelSerializer):
     class Meta:
