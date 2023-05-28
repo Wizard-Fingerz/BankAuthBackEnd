@@ -27,12 +27,6 @@ from .models import *
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 # Create your views here.
 
-<<<<<<< HEAD
-key = Fernet.generate_key()
-print(key)
-f = Fernet(key)
-print(f)
-=======
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def get_auth_token(request):
@@ -47,7 +41,6 @@ def get_auth_token(request):
 
     return Response({'token': token_value})
 
->>>>>>> 423dec5b765577ae5b196fe21031777036935339
 
 def get_csrf_token(request):
     token = csrf.get_token(request)
